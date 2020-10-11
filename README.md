@@ -1,3 +1,3 @@
-# scrapmercadona
+# Scrap OpenFoodFacts
 
-Web scrapping with Beautiful soup to populate ShopMate's database.
+Web scrapping of OpenFoodFacts with BeautifulSoup to populate ShopMate's database. 
