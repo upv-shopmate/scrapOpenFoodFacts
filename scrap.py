@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import random
+import unicodedata
 
 from countries import countries_ES
 
@@ -27,7 +28,7 @@ def get_products():
         link = re.sub(r"producto", "product", MAIN_URL + a.get("href", None))
         gtin = re.match(r".*\/product\/(\d+)", link).group(1)
         products[gtin] = {
-            "name": title,
+            "name": ''.join(filter(lambda c : ord(c) < 127, unicodedata.normalize("NFKC", title))),
             "link": link 
         }
         get_product(gtin, link)
@@ -85,7 +86,7 @@ def get_origin(gtin, product_soup):
     origin_span = product_soup.find("span", text="Origin of ingredients:")
     if origin_span is not None:
         tokens = re.split(r",|\s", re.sub(r"Origin of ingredients:", "", origin_span.parent.text).strip())
-        origin = next(value for key, value in countries_ES.items() if any(token.lower() in key.lower() for token in tokens))
+        origin = next((value for key, value in countries_ES.items() if any(token.lower() in key.lower() for token in tokens)), None)
         products[gtin]["origin_country"] = origin
 
 def get_weight(gtin, product_soup):
