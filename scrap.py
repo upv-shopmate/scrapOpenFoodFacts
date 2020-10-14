@@ -4,6 +4,7 @@ import re
 import random
 import unicodedata
 import sys
+import numpy as np
 
 from countries import countries_ES
 
@@ -53,7 +54,12 @@ def get_product(gtin, link):
     get_stock(gtin)
     get_edible(gtin)
     get_times_sold(gtin)
+    get_units(gtin)
 
+
+def get_units(gtin):
+    units = np.random.choice([None, 1, 2, 3], p=[0.5, 0.2, 0.2, 0.1])
+    products[gtin]["units"] = True
 
 def get_edible(gtin):
     products[gtin]["edible"] = True
