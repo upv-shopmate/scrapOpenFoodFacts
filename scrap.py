@@ -10,7 +10,6 @@ from countries import countries_ES
 MAIN_URL = "https://world.openfoodfacts.org"
 URL = "https://es.openfoodfacts.org/tienda/mercadona"
 LIMIT = 20
-ITERATIONS = 100
 
 products = {}
 
@@ -25,7 +24,6 @@ def get_html(url, n=None):
 
 def get_products():
     ul = soup.find("ul", "products")
-    i = 0
     for a in ul.findChildren("a", recursive=True):
         title = a.get("title", None).strip()
         link = re.sub(r"producto", "product", MAIN_URL + a.get("href", None))
@@ -35,11 +33,6 @@ def get_products():
             "link": link 
         }
         get_product(gtin, link)
-        # do 20 iterations
-        if i == ITERATIONS:
-            break
-        i += 1
-        # TODO remove
 
         
 def get_product(gtin, link):
