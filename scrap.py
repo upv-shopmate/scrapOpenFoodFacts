@@ -3,12 +3,14 @@ from bs4 import BeautifulSoup
 import re
 import random
 import unicodedata
+import numpy as np
 
 from countries import countries_ES
 
 MAIN_URL = "https://world.openfoodfacts.org"
 URL = "https://es.openfoodfacts.org/tienda/mercadona"
 LIMIT = 20
+ITERATIONS = 100
 
 products = {}
 
@@ -23,6 +25,7 @@ def get_html(url, n=None):
 
 def get_products():
     ul = soup.find("ul", "products")
+    i = 0
     for a in ul.findChildren("a", recursive=True):
         title = a.get("title", None).strip()
         link = re.sub(r"producto", "product", MAIN_URL + a.get("href", None))
@@ -32,6 +35,11 @@ def get_products():
             "link": link 
         }
         get_product(gtin, link)
+        # do 20 iterations
+        if i == ITERATIONS:
+            break
+        i += 1
+        # TODO remove
 
         
 def get_product(gtin, link):
@@ -46,7 +54,12 @@ def get_product(gtin, link):
     get_stock(gtin)
     get_edible(gtin)
     get_times_sold(gtin)
+    get_units(gtin)
 
+
+def get_units(gtin):
+    units = np.random.choice([None, 1, 2, 3], p=[0.5, 0.2, 0.2, 0.1])
+    products[gtin]["units"] = True
 
 def get_edible(gtin):
     products[gtin]["edible"] = True
