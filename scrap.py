@@ -3,14 +3,20 @@ from bs4 import BeautifulSoup
 import re
 import random
 import unicodedata
+import sys
 
 from countries import countries_ES
 
 MAIN_URL = "https://world.openfoodfacts.org"
 URL = "https://es.openfoodfacts.org/tienda/mercadona"
-LIMIT = 20
 
 products = {}
+
+argv = sys.argv[1:]
+if len(argv) < 1:
+    LIMIT = 10
+else:
+    LIMIT = int(argv[0])
 
 def get_html(url, n=None):
     page = None
@@ -24,11 +30,12 @@ def get_html(url, n=None):
 def get_products():
     ul = soup.find("ul", "products")
     for a in ul.findChildren("a", recursive=True):
-        title = a.get("title", None).strip()
+        title = a.get("title", None).partition("-")[0].strip()
+        normalized_title = ''.join(filter(lambda c : ord(c) < 127, unicodedata.normalize("NFKC", title)))
         link = re.sub(r"producto", "product", MAIN_URL + a.get("href", None))
         gtin = re.match(r".*\/product\/(\d+)", link).group(1)
         products[gtin] = {
-            "name": ''.join(filter(lambda c : ord(c) < 127, unicodedata.normalize("NFKC", title))),
+            "name": normalized_title,
             "link": link 
         }
         get_product(gtin, link)
@@ -85,7 +92,7 @@ def get_categories(gtin, product_soup):
 def get_origin(gtin, product_soup):
     origin_span = product_soup.find("span", text="Origin of ingredients:")
     if origin_span is not None:
-        tokens = re.split(r",|\s", re.sub(r"Origin of ingredients:", "", origin_span.parent.text).strip())
+        tokens = filter(None, re.split(r",|\s", re.sub(r"Origin of ingredients:", "", origin_span.parent.text).strip()))
         origin = next((value for key, value in countries_ES.items() if any(token.lower() in key.lower() for token in tokens)), None)
         products[gtin]["origin_country"] = origin
 
@@ -101,7 +108,9 @@ def save():
     import json
     with open("products.json", "w") as f:
         json.dump(products, f)
+
 n = 0
+print("LIMIT =", LIMIT)
 while n < LIMIT:
     html = get_html(URL, n)
     soup = BeautifulSoup(html, 'html.parser')
