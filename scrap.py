@@ -106,7 +106,10 @@ def get_weight(gtin, product_soup):
     quantity_span = product_soup.find("span", text="Quantity:")
     if quantity_span is not None:
         with_unit = re.sub(r"Quantity:", "", quantity_span.parent.text).strip()
-        quantity = int(''.join(filter(str.isdigit, with_unit)))
+        try:
+            quantity = int(''.join(filter(str.isdigit, with_unit)))
+        except ValueError:
+            quantity = None
         products[gtin]["weight"] = quantity
     
 
