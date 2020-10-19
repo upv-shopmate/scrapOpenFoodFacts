@@ -13,11 +13,8 @@ URL = "https://es.openfoodfacts.org/tienda/mercadona"
 
 products = {}
 
-argv = sys.argv[1:]
-if len(argv) < 1:
-    LIMIT = 10
-else:
-    LIMIT = int(argv[0])
+# page count
+LIMIT = 162 
 
 def get_html(url, n=None):
     page = None
@@ -28,18 +25,20 @@ def get_html(url, n=None):
     assert page is not None
     return page.text
 
+# get products of that page
 def get_products():
     ul = soup.find("ul", "products")
-    for a in ul.findChildren("a", recursive=True):
-        title = a.get("title", None).partition("-")[0].strip()
-        normalized_title = ''.join(filter(lambda c : ord(c) < 127, unicodedata.normalize("NFKC", title)))
-        link = re.sub(r"producto", "product", MAIN_URL + a.get("href", None))
-        gtin = re.match(r".*\/product\/(\d+)", link).group(1)
-        products[gtin] = {
-            "name": normalized_title,
-            "link": link 
-        }
-        get_product(gtin, link)
+    if ul is not None:
+        for a in ul.findChildren("a", recursive=True):
+            title = a.get("title", None).partition("-")[0].strip()
+            normalized_title = ''.join(filter(lambda c : ord(c) < 127, unicodedata.normalize("NFKC", title)))
+            link = re.sub(r"producto", "product", MAIN_URL + a.get("href", None))
+            gtin = re.match(r".*\/product\/(\d+)", link).group(1)
+            products[gtin] = {
+                "name": normalized_title,
+                "link": link 
+            }
+            get_product(gtin, link)
 
         
 def get_product(gtin, link):
@@ -119,7 +118,6 @@ def save():
         json.dump(products, f)
 
 n = 0
-print("LIMIT =", LIMIT)
 while n < LIMIT:
     html = get_html(URL, n)
     soup = BeautifulSoup(html, 'html.parser')
