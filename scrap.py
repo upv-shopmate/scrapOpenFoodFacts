@@ -15,12 +15,13 @@ products = {}
 
 # page count
 LIMIT = 162 
+total_in_page = 20
 
 if len(sys.argv) > 1:
     LIMIT = int(sys.argv[1])
 print("LIMIT =", LIMIT)
 
-def get_html(url, n=None):
+def get_html(url):
     page = None
     if n:
         page = requests.get(url + "/" + str(n))
@@ -33,6 +34,7 @@ def get_html(url, n=None):
 def get_products():
     ul = soup.find("ul", "products")
     if ul is not None:
+        i = 0
         for a in ul.findChildren("a", recursive=True):
             title = a.get("title", None).partition("-")[0].strip()
             normalized_title = ''.join(filter(lambda c : ord(c) < 127, unicodedata.normalize("NFKC", title)))
@@ -43,8 +45,14 @@ def get_products():
                 "link": link 
             }
             get_product(gtin, link)
+            print_percentage(i)
+            i += 1
 
         
+def print_percentage(i):
+    x = (i/(LIMIT * total_in_page))*100
+    print('Done... {:.2f}%'.format(x), end="\r")
+     
 def get_product(gtin, link):
     product_page_html = get_html(link)
     product_soup = BeautifulSoup(product_page_html, 'html.parser')
@@ -123,7 +131,7 @@ def save():
 
 n = 0
 while n < LIMIT:
-    html = get_html(URL, n)
+    html = get_html(URL)
     soup = BeautifulSoup(html, 'html.parser')
     get_products()
     save()
