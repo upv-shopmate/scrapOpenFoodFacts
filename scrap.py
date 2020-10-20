@@ -51,7 +51,6 @@ def get_products():
         
 def print_percentage(i):
     product = i+(total_in_page*n)
-    print(product)
     x = ((product)/(LIMIT * total_in_page))*100
     print('Done... {:.2f}%'.format(x), end="\r")
      
