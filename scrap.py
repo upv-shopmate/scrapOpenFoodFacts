@@ -16,6 +16,10 @@ products = {}
 # page count
 LIMIT = 162 
 
+if len(sys.argv) > 1:
+    LIMIT = int(sys.argv[1])
+print("LIMIT =", LIMIT)
+
 def get_html(url, n=None):
     page = None
     if n:
