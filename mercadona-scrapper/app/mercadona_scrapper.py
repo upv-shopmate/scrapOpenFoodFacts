@@ -2,12 +2,19 @@ from selenium import webdriver
 import time
 from selenium.common.exceptions import StaleElementReferenceException
 from sys import platform
+import os
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 if platform == "darwin":
-    chrome_driver_path = 'bin/chromedrive_macos'
+    chrome_driver_path = os.path.join(BASE_DIR, 'bin/chromedriver_macos')
+elif os.name == "nt":
+    chrome_driver_path = os.path.join(BASE_DIR, 'bin/chromedriver_win32.exe')
 else:
-    chrome_driver_path = '/Users/peristocles/fun/mercadona-scrapper/bin/chromedrive'
+    chrome_driver_path = os.path.join(BASE_DIR, 'bin/chromedriver')
 
+chrome_driver_path = os.path.normpath(chrome_driver_path)
+print(chrome_driver_path)
 
 
 class MercadonaScrapper(object):
