@@ -50,9 +50,9 @@ class MercadonaScrapper(object):
                 self.super_category_name = name
                 self._get_category_name()
                 products = products + self._scrap_elements()
-        print(len(products))
 
         return products
+
     def _get_categories(self):
         # 112 is an arbitrary number to check all other categories
         self.search_in_category(112)
@@ -65,7 +65,6 @@ class MercadonaScrapper(object):
 
     def _get_super_category_elements(self, super_category_element):
         category_buttons = super_category_element.find_element_by_tag_name('ul').find_elements_by_tag_name('button')
-        print(len(category_buttons))
         return category_buttons
 
     def search_in_category(self, category):
@@ -125,7 +124,13 @@ class MercadonaScrapper(object):
         img_elements = thumbmail_elements.find_elements_by_tag_name('img')
         images = list(map(lambda e: e.get_attribute('src'), img_elements))
 
-        product = Product(self.super_category_name, self.category_name, name, weight, volume, unit_price, images)
+        current_url = self.driver.current_url
+        id_str = current_url.split("/")[4]
+        product_id = int(id_str)
+        zeros_needed = 14 - len(id_str)
+        barcode = product_id * (10 ** zeros_needed)
+
+        product = Product(self.super_category_name, self.category_name, product_id, barcode, name, weight, volume, unit_price, images)
         self._leave_product_details()
         print(product)
         return product
@@ -143,9 +148,11 @@ class MercadonaScrapper(object):
 
 class Product(object):
 
-    def __init__(self, super_category, category, name, weight, volume, price, images):
+    def __init__(self, super_category, category, product_id, barcode, name, weight, volume, price, images):
         self.super_category = super_category
         self.category = category
+        self.product_id = product_id
+        self.barcode = barcode
         self.name = name
         self.weight = weight
         self.volume = volume
@@ -153,9 +160,11 @@ class Product(object):
         self.images = images
 
     def __repr__(self):
-        return "%s | %s | %s | %s | %s | %s | %d" % (
+        return "Product: %s | %s | %s | %s | %s | %s | %s | %s | %d" % (
+            self.product_id, 
             self.super_category, 
             self.category, 
+            self.barcode, 
             self.name, 
             self.price, 
             self.weight, 
