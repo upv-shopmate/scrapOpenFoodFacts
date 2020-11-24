@@ -84,7 +84,8 @@ class MercadonaScrapper(object):
                 assert isinstance(product, Product)
             except StaleElementReferenceException:
                 print("product not available")
-        products.append(product)
+        if product is not None:
+            products.append(product)
         return products
 
     def _scrap_product(self, product_element):
@@ -126,7 +127,11 @@ class MercadonaScrapper(object):
 
         current_url = self.driver.current_url
         id_str = current_url.split("/")[4]
-        product_id = int(id_str)
+        try:
+            product_id = int(id_str)
+        except Exception as e:
+            return None
+
         zeros_needed = 14 - len(id_str)
         barcode = product_id * (10 ** zeros_needed)
 
